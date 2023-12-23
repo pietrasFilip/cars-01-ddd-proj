@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "model": "BMW",
+    "price": 20,
+    "color": "WHITE",
+    "mileage": 200,
+    "components": [2, 1]
+  },
+  {
+    "id": 2,
+    "model": "BMW",
+    "price": 2000,
+    "color": "BLUE",
+    "mileage": 2000,
+    "components": [1, 3]
+  },
+  {
+    "id": 3,
+    "model": "KIA",
+    "price": 2000,
+    "color": "BLUE",
+    "mileage": 2000,
+    "components": [2]
+  }
+]
