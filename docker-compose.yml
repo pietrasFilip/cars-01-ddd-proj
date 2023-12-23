@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mysql_test:
+    image: mysql:latest
+    restart: always
+
+    environment:
+      MYSQL_DATABASE: test_cars_01
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user1234
+      MYSQL_TCP_PORT: 3307
+    ports:
+      - "3307:3307"
+    expose:
+      - "3307"
+    networks:
+      - cars-01-network
+    volumes:
+      - "./src/test/resources/schema.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "./src/test/resources/data.sql:/docker-entrypoint-initdb.d/2.sql"
+
+  mysql_main:
+    image: mysql:latest
+    restart: always
+
+    environment:
+      MYSQL_DATABASE: cars_01
+      MYSQL_ROOT_PASSWORD: main
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user1234
+      MYSQL_TCP_PORT: 3308
+    ports:
+      - "3308:3308"
+    expose:
+      - "3308"
+    networks:
+      - cars-01-network
+    volumes:
+      - "mysql_cars_01_db:/var/lib/mysql"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 5s
+      retries: 10
+
+  cars_01_web_app_ddd:
+    image: pietrasfilip/cars-01-ddd-app:1.0
+    ports:
+      - "8080:8080"
+    restart: always
+    networks:
+      - cars-01-network
+    depends_on:
+      mysql_main:
+        condition: service_healthy
+
+volumes:
+  mysql_test:
+  mysql_cars_01_db:
+  cars_01_web_app_ddd:
+networks:
+  cars-01-network:
