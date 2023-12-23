@@ -1,0 +1,116 @@
+package com.app.infrastructure.api.routing;
+
+import com.app.application.dto.response.ResponseDto;
+import com.app.application.dto.token.AuthenticationDto;
+import com.app.application.dto.token.RefreshTokenDto;
+import com.app.application.service.token.TokensService;
+import com.app.application.service.user.UserService;
+import com.app.infrastructure.api.routing.uri.SecurityUri;
+import com.app.infrastructure.api.transformer.JsonTransformer;
+import com.google.gson.Gson;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import static com.app.infrastructure.api.routing.uri.SecurityUri.*;
+import static spark.Spark.*;
+
+@Component
+public class SecurityRouting {
+    private final TokensService tokensService;
+    private final JsonTransformer jsonTransformer;
+    private final UserService userService;
+    private final Gson gson;
+    private final Environment environment;
+    private final Map<SecurityUri, List<String>> uris;
+    private static final Logger logger = LogManager.getRootLogger();
+
+    public SecurityRouting(TokensService tokensService, JsonTransformer jsonTransformer, UserService userService,
+                           Gson gson, Environment environment) {
+        this.tokensService = tokensService;
+        this.jsonTransformer = jsonTransformer;
+        this.userService = userService;
+        this.gson = gson;
+        this.environment = environment;
+        this.uris = initUris();
+    }
+
+    private Map<SecurityUri, List<String>> initUris() {
+        return Map.of(
+                ADMIN, Arrays.stream(environment.getRequiredProperty("uri.ADMIN")
+                        .split(",")).toList(),
+                IS_AUTH, Arrays.stream(environment.getRequiredProperty("uri.IS_AUTH")
+                        .split(",")).toList(),
+                PERMITTED_ALL, Arrays.stream(environment.getRequiredProperty("uri.PERMITTED_ALL")
+                        .split(",")).toList()
+        );
+    }
+
+    private boolean containsUri(SecurityUri key, String uri) {
+        return uris.get(key).stream().anyMatch(uri::startsWith);
+    }
+
+    public void routes() {
+        before((request, response) -> {
+            var uriFromRequest = request.uri();
+
+            if (!containsUri(PERMITTED_ALL, uriFromRequest)) {
+                var accessCookie = request.cookie("access");
+                var authorizedUser = tokensService.parseTokens(accessCookie);
+
+                if (
+                        (containsUri(IS_AUTH, uriFromRequest) && !authorizedUser.isAuth()) ||
+                        (containsUri(ADMIN, uriFromRequest) && !authorizedUser.isAdmin())
+                ) {
+                    logger.error("Not authorized user.");
+                    throw new IllegalStateException("Access Denied!");
+                }
+            }
+
+        });
+
+        after((request, response) -> {
+            response.header("Access-Control-Allow-Origin", "*");
+            response.header("Access-Control-Allow-Methods", "GET");
+            response.header("Access-Control-Allow-Methods", "POST");
+        });
+
+        path("/auth", () -> {
+            // http://localhost:8080/auth/login
+            post(
+                    "/login",
+                    (request, response) -> {
+                        var authenticationDto = gson.fromJson(
+                                request.body(),
+                                AuthenticationDto.class);
+
+                        var userId = userService.isUserCorrect(authenticationDto);
+
+                        var tokens = tokensService.generateTokens(userId);
+                        response.header("Content-Type", "application/json;charset=utf-8");
+                        response.cookie("/", "access", tokens.access(), 3600000, false, true);
+                        response.cookie("/", "refresh", tokens.refresh(), 3600000, false, true);
+                        return new ResponseDto<>(tokens);
+                    },
+                    jsonTransformer
+            );
+            // http://localhost:8080/auth/refresh
+            post(
+                    "/refresh",
+                    (request, response) -> {
+                        var refreshTokenDto = gson.fromJson(
+                                request.body(),
+                                RefreshTokenDto.class);
+                        response.header("Content-Type", "application/json;charset=utf-8");
+                        return new ResponseDto<>(tokensService.refreshTokens(refreshTokenDto));
+                    },
+                    jsonTransformer
+            );
+        });
+    }
+}
