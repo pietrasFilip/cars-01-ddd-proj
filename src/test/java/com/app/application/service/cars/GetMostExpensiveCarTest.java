@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppTestConfig.class)
-@TestPropertySource("classpath:app-test.properties")
+@TestPropertySource("classpath:application-test.properties")
 class GetMostExpensiveCarTest {
     @Autowired
     private CarsService carsService;

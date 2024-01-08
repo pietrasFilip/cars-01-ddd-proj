@@ -1,11 +1,11 @@
-package com.app.infrastructure.api.routing;
+package com.app.infrastructure.api.controller;
 
 import com.app.application.dto.response.ResponseDto;
 import com.app.application.dto.token.AuthenticationDto;
 import com.app.application.dto.token.RefreshTokenDto;
 import com.app.application.service.token.TokensService;
 import com.app.application.service.user.UserService;
-import com.app.infrastructure.api.routing.uri.SecurityUri;
+import com.app.infrastructure.api.controller.uri.SecurityUri;
 import com.app.infrastructure.api.transformer.JsonTransformer;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.app.infrastructure.api.routing.uri.SecurityUri.*;
+import static com.app.infrastructure.api.controller.uri.SecurityUri.*;
 import static spark.Spark.*;
 
 @Component

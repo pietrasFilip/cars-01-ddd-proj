@@ -23,7 +23,7 @@ import static com.app.domain.cars_management.model.CarComparator.byPrice;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppTestConfig.class)
-@TestPropertySource("classpath:app-test.properties")
+@TestPropertySource("classpath:application-test.properties")
 class SortByPriceTest {
 
     @Autowired

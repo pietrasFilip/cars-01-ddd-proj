@@ -1,4 +1,4 @@
-package com.app.infrastructure.api.routing;
+package com.app.infrastructure.api.controller;
 
 import com.app.application.dto.response.ResponseDto;
 import com.app.infrastructure.api.transformer.JsonTransformer;

@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppTestConfig.class)
-@TestPropertySource("classpath:app-test.properties")
+@TestPropertySource("classpath:application-test.properties")
 class GetNumberOfCarsWithComponentTest {
     @Autowired
     private CarsService carsService;

@@ -1,14 +1,22 @@
-package com.app.infrastructure.api.routing;
+package com.app.infrastructure.api.controller;
 
 import com.app.application.dto.response.ResponseDto;
 import com.app.application.service.cars.CarsService;
 import com.app.application.service.cars.provider.CarsProvider;
 import com.app.application.service.cars_statistics.NumbersStatisticsType;
+import com.app.domain.cars_management.model.Car;
+import com.app.domain.cars_management.model.color.Color;
 import com.app.infrastructure.api.transformer.JsonTransformer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 import static com.app.domain.cars_management.model.ComponentComparator.byComponentName;
 import static java.lang.Integer.parseInt;

@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppTestConfig.class)
-@TestPropertySource("classpath:app-test.properties")
+@TestPropertySource("classpath:application-test.properties")
 public class GetCarsWithMileageGreaterThanTest {
     @Autowired
     private CarsService carsService;

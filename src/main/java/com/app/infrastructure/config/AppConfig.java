@@ -1,6 +1,5 @@
 package com.app.infrastructure.config;
 
-import com.app.application.dto.token.AuthorizationDto;
 import com.app.application.service.cars.CarsService;
 import com.app.application.service.cars.CarsServiceImpl;
 import com.app.application.service.cars.provider.CarsProvider;
@@ -13,15 +12,12 @@ import com.app.application.validator.token.AuthenticationDtoValidator;
 import com.app.application.validator.token.AuthorizationDtoValidator;
 import com.app.application.validator.token.RefreshTokenDtoValidator;
 import com.app.application.validator.token.TokensDtoValidator;
-import com.app.application.validator.token.generic.TokenValidator;
 import com.app.application.validator.token.impl.AuthenticationDtoValidatorImpl;
 import com.app.application.validator.token.impl.AuthorizationDtoValidatorImpl;
 import com.app.application.validator.token.impl.RefreshTokenDtoValidatorImpl;
 import com.app.application.validator.token.impl.TokensDtoValidatorImpl;
 import com.app.application.validator.user.CreateUserDtoValidator;
 import com.app.application.validator.user.impl.CreateUserDtoValidatorImpl;
-import com.app.domain.users_management.model.repository.UserRepository;
-import com.app.infrastructure.email.EmailConfiguration;
 import com.app.domain.cars_management.model.repository.db.CarRepositoryDb;
 import com.app.domain.cars_management.model.repository.json.CarRepositoryJson;
 import com.app.domain.cars_management.model.repository.json.ComponentRepositoryJson;
@@ -42,8 +38,8 @@ import com.app.domain.cars_management.policy.factory.processor.impl.CarDataProce
 import com.app.domain.cars_management.policy.factory.processor.impl.CarDataProcessorTxtImpl;
 import com.app.domain.cars_management.policy.factory.validator.CarDataValidator;
 import com.app.domain.cars_management.policy.factory.validator.impl.CarDataValidatorImpl;
-import com.app.infrastructure.persistence.repository.impl.db.dao.CarEntityDao;
-import com.app.infrastructure.persistence.repository.impl.db.dao.impl.CarEntityDaoImpl;
+import com.app.domain.users_management.model.repository.UserRepository;
+import com.app.infrastructure.email.EmailConfiguration;
 import com.app.infrastructure.persistence.repository.impl.json.CarRepositoryJsonImpl;
 import com.app.infrastructure.persistence.repository.impl.json.ComponentRepositoryJsonImpl;
 import com.app.infrastructure.persistence.repository.impl.txt.CarRepositoryTxtImpl;
@@ -52,8 +48,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import lombok.RequiredArgsConstructor;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.api.mailer.config.TransportStrategy;
@@ -74,11 +68,6 @@ import javax.crypto.SecretKey;
 @RequiredArgsConstructor
 public class AppConfig {
     private final Environment environment;
-
-    @Bean
-    public EntityManagerFactory entityManagerFactory() {
-        return Persistence.createEntityManagerFactory("HBN");
-    }
 
     @Bean
     public Gson gson() {
@@ -248,11 +237,6 @@ public class AppConfig {
     @Bean
     public CarDataProcessor carDataTxtProcessor() {
         return new CarDataProcessorTxtImpl(fromTxtToCarWithValidator());
-    }
-
-    @Bean
-    public CarEntityDao carEntityDbDao() {
-        return new CarEntityDaoImpl(entityManagerFactory());
     }
 
 }

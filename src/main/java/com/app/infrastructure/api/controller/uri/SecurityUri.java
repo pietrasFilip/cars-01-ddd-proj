@@ -1,4 +1,4 @@
-package com.app.infrastructure.api.routing.uri;
+package com.app.infrastructure.api.controller.uri;
 
 public enum SecurityUri {
     ADMIN,

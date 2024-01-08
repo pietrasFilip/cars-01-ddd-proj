@@ -33,51 +33,52 @@ import com.app.domain.cars_management.policy.factory.processor.impl.CarDataProce
 import com.app.domain.cars_management.policy.factory.processor.impl.CarDataProcessorTxtImpl;
 import com.app.domain.cars_management.policy.factory.validator.CarDataValidator;
 import com.app.domain.cars_management.policy.factory.validator.impl.CarDataValidatorImpl;
-import com.app.infrastructure.persistence.repository.impl.db.CarRepositoryDbImpl;
-import com.app.infrastructure.persistence.repository.impl.db.dao.CarEntityDao;
-import com.app.infrastructure.persistence.repository.impl.db.dao.impl.CarEntityDaoImpl;
 import com.app.infrastructure.persistence.repository.impl.json.CarRepositoryJsonImpl;
 import com.app.infrastructure.persistence.repository.impl.json.ComponentRepositoryJsonImpl;
 import com.app.infrastructure.persistence.repository.impl.txt.CarRepositoryTxtImpl;
 import com.app.infrastructure.persistence.repository.impl.txt.ComponentRepositoryTxtImpl;
-import com.app.infrastructure.persistence.repository.provider.impl.CarsProviderImpl;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import lombok.RequiredArgsConstructor;
+import org.mockito.Mockito;
+import org.simplejavamail.api.mailer.Mailer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
+import static org.mockito.Mockito.mock;
+
+@ComponentScan("com.app")
+@Profile("test")
 @RequiredArgsConstructor
 public class AppTestConfig {
     private final Environment environment;
 
     @Bean
-    public EntityManagerFactory entityManagerFactory() {
-        return Persistence.createEntityManagerFactory("HBN_TEST");
+    public Mailer mailer() {
+        return mock(Mailer.class);
     }
 
     @Bean
     public Gson gson() {
-        return new GsonBuilder().serializeNulls().setPrettyPrinting().create();
+        return new GsonBuilder().serializeNulls().enableComplexMapKeySerialization().setPrettyPrinting().create();
     }
 
     // -----------------------------------------------------------------------------------
     // PERSISTENCE
     // -----------------------------------------------------------------------------------
-
     @Bean
-    public ComponentRepositoryJson componentRepositoryJson(Gson gson) {
-        return new ComponentRepositoryJsonImpl(gson,
+    public ComponentRepositoryJson componentRepositoryJson() {
+        return new ComponentRepositoryJsonImpl(gson(),
                 environment.getProperty("json.components.path"));
     }
 
     @Bean
-    public CarRepositoryJson carRepositoryJson(Gson gson, ComponentRepositoryJson componentRepositoryJson) {
-        return new CarRepositoryJsonImpl(gson, environment.getProperty("json.cars.path"),
-                componentRepositoryJson);
+    public CarRepositoryJson carRepositoryJson() {
+        return new CarRepositoryJsonImpl(gson(), environment.getProperty("json.cars.path"),
+                componentRepositoryJson());
     }
 
     @Bean
@@ -86,57 +87,14 @@ public class AppTestConfig {
     }
 
     @Bean
-    public CarRepositoryTxt carRepositoryTxt(ComponentRepositoryTxt componentRepositoryTxt) {
-        return new CarRepositoryTxtImpl(componentRepositoryTxt,
+    public CarRepositoryTxt carRepositoryTxt() {
+        return new CarRepositoryTxtImpl(componentRepositoryTxt(),
                 environment.getRequiredProperty("txt.cars.path"));
     }
 
     // -----------------------------------------------------------------------------------
     // SERVICE
     // -----------------------------------------------------------------------------------
-
-    @Bean
-    public FromDbToCarWithValidator fromDbToCarWithValidator(CarRepositoryDb carRepositoryDb, CarDataValidator carDataValidator) {
-        return new FromDbToCarWithValidator(carRepositoryDb, carDataValidator);
-    }
-
-    @Bean
-    public FromJsonToCarWithValidator fromJsonToCarWithValidator(CarRepositoryJson carRepositoryJson,
-                                                                 Gson gson,
-                                                                 CarDataValidator carDataValidator) {
-        return new FromJsonToCarWithValidator(carRepositoryJson, gson, carDataValidator);
-    }
-
-    @Bean
-    public FromTxtToCarWithValidator fromTxtToCarWithValidator(CarRepositoryTxt carRepositoryTxt,
-                                                               CarDataValidator carDataValidator) {
-        return new FromTxtToCarWithValidator(carRepositoryTxt, carDataValidator);
-    }
-
-    @Bean
-    @Qualifier("dbProcessor")
-    public CarDataProcessor carDataDbProcessor(FromDbToCarWithValidator fromDbToCarWithValidator) {
-        return new CarDataProcessorDbImpl(fromDbToCarWithValidator);
-    }
-
-    @Bean
-    @Qualifier("jsonProcessor")
-    public CarDataProcessor carDataJsonProcessor(FromJsonToCarWithValidator fromJsonToCarWithValidator) {
-        return new CarDataProcessorJsonImpl(fromJsonToCarWithValidator);
-    }
-
-    @Bean
-    @Qualifier("txtProcessor")
-    public CarDataProcessor carDataTxtProcessor(FromTxtToCarWithValidator fromTxtToCarWithValidator) {
-        return new CarDataProcessorTxtImpl(fromTxtToCarWithValidator);
-    }
-
-    @Bean
-    public CarsProvider carsProvider(@Qualifier("dbProcessor") CarDataProcessor carDataDbProcessor,
-                                     @Qualifier("jsonProcessor") CarDataProcessor carDataJsonProcessor,
-                                     @Qualifier("txtProcessor") CarDataProcessor carDataTxtProcessor) {
-        return new CarsProviderImpl(carDataDbProcessor, carDataJsonProcessor, carDataTxtProcessor);
-    }
 
     @Bean
     public CarsService carsService(CarsProvider carsProvider) {
@@ -173,28 +131,18 @@ public class AppTestConfig {
     // -----------------------------------------------------------------------------------
 
     @Bean
-    public CarEntityDao carEntityDbDao(EntityManagerFactory entityManagerFactory) {
-        return new CarEntityDaoImpl(entityManagerFactory);
-    }
-
-    @Bean
-    public CarRepositoryDb carRepositoryDb(CarEntityDao carEntityDao) {
-        return new CarRepositoryDbImpl(carEntityDao);
-    }
-
-    @Bean
     public CarDataDbLoader carDataDbLoader(CarRepositoryDb carRepositoryDb) {
         return new CarDataDbLoaderImpl(carRepositoryDb);
     }
 
     @Bean
-    public CarDataJsonLoader carDataJsonLoader(Gson gson, CarRepositoryJson carRepositoryJson) {
-        return new CarDataJsonLoaderImpl(gson, carRepositoryJson);
+    public CarDataJsonLoader carDataJsonLoader() {
+        return new CarDataJsonLoaderImpl(gson(), carRepositoryJson());
     }
 
     @Bean
-    public CarDataTxtLoader carDataTxtLoader(CarRepositoryTxt carRepositoryTxt) {
-        return new CarDataTxtLoaderImpl(carRepositoryTxt);
+    public CarDataTxtLoader carDataTxtLoader() {
+        return new CarDataTxtLoaderImpl(carRepositoryTxt());
     }
 
     @Bean
@@ -203,5 +151,38 @@ public class AppTestConfig {
                 environment.getRequiredProperty("validator.regex.model.name"),
                 environment.getRequiredProperty("validator.regex.items.name")
         );
+    }
+
+    @Bean
+    public FromDbToCarWithValidator fromDbToCarWithValidator(CarRepositoryDb carRepositoryDb) {
+        return new FromDbToCarWithValidator(carRepositoryDb, carDataValidator());
+    }
+
+    @Bean
+    public FromJsonToCarWithValidator fromJsonToCarWithValidator() {
+        return new FromJsonToCarWithValidator(carRepositoryJson(), gson(), carDataValidator());
+    }
+
+    @Bean
+    public FromTxtToCarWithValidator fromTxtToCarWithValidator() {
+        return new FromTxtToCarWithValidator(carRepositoryTxt(), carDataValidator());
+    }
+
+    @Bean
+    @Qualifier("dbProcessor")
+    public CarDataProcessor carDataDbProcessor(CarRepositoryDb carRepositoryDb) {
+        return new CarDataProcessorDbImpl(fromDbToCarWithValidator(carRepositoryDb));
+    }
+
+    @Bean
+    @Qualifier("jsonProcessor")
+    public CarDataProcessor carDataJsonProcessor() {
+        return new CarDataProcessorJsonImpl(fromJsonToCarWithValidator());
+    }
+
+    @Bean
+    @Qualifier("txtProcessor")
+    public CarDataProcessor carDataTxtProcessor() {
+        return new CarDataProcessorTxtImpl(fromTxtToCarWithValidator());
     }
 }

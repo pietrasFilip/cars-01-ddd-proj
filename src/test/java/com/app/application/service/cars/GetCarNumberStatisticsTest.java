@@ -21,7 +21,7 @@ import static com.app.application.service.cars_statistics.NumbersStatisticsType.
 import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppTestConfig.class)
-@TestPropertySource("classpath:app-test.properties")
+@TestPropertySource("classpath:application-test.properties")
 public class GetCarNumberStatisticsTest {
     @Autowired
     private CarsService carsService;
