@@ -1,3 +1,4 @@
+/*
 package com.app.infrastructure.api.controller;
 
 import com.app.application.dto.response.ResponseDto;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import static spark.Spark.*;
 
-@Component
 @RequiredArgsConstructor
 public class ErrorRouting {
     private final JsonTransformer jsonTransformer;
@@ -43,3 +43,4 @@ public class ErrorRouting {
         });
     }
 }
+*/
